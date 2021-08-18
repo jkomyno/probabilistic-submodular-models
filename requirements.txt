@@ -1,0 +1,6 @@
+hydra-core==1.1
+omegaconf==2.1.0
+networkx==2.6.2
+scipy==1.4.1
+numpy==1.21.0
+nptyping==1.4.3
