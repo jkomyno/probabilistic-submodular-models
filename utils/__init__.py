@@ -5,4 +5,5 @@ from .compute_min_f import compute_min_f
 from .compute_mixing_rates import compute_mixing_rates
 from .fst import fst
 from .snd import snd
+from .polyhedron_greedy import polyhedron_greedy
 from .verify_submodularity import verify_submodularity

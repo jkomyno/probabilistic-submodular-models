@@ -6,6 +6,7 @@ import operator
 import conf_utils
 import utils
 import sampler
+import usfm
 
 
 @hydra.main(config_path="conf", config_name="config")
@@ -76,5 +77,25 @@ def run(cfg: DictConfig) -> None:
     print(f'Metropolis mixing rates: \n{metropolis_mixing_rates}')
 
 
+@hydra.main(config_path="conf", config_name="config")
+def run_fujishige_wolfe(cfg: DictConfig) -> None:
+    # numpy random generator instance
+    rng: np.random.Generator = np.random.default_rng(2021)
+
+    # boolean switch for verbose messages
+    is_verbose = bool(cfg.selected.verbose)
+
+    # objective submodular function
+    f = conf_utils.get_objective(rng, cfg=cfg)
+
+    # run exact set-submodular minimization on f
+    S_star, fw_stats = usfm.fujishige_wolfe(f)
+
+    if is_verbose:
+        print(f'f(S): {f.value(S_star)}')
+        print(f'\nFujishige-Wolfe stats:\n{fw_stats}')
+
+
 if __name__ == '__main__':
-    run()
+    # run()
+    run_fujishige_wolfe()
