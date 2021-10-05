@@ -7,3 +7,4 @@ from .fst import fst
 from .snd import snd
 from .polyhedron_greedy import polyhedron_greedy
 from .verify_submodularity import verify_submodularity
+from .lovasz import lovasz

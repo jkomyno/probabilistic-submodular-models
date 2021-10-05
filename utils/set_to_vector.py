@@ -1,6 +1,7 @@
 import numpy as np
 from typing import List
+from objective import Objective
 
 
-def set_to_vector(V: List[int], S: List[int]):
-    return (np.in1d(V, S) * 1).astype(np.int64)
+def set_to_vector(f: Objective, S: List[int]):
+    return np.isin(f.V, list(S), assume_unique=True).astype(np.float64)

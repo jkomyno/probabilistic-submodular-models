@@ -1,30 +1,42 @@
 import numpy as np
-from nptyping import NDArray, Float64
+from functools import reduce
+from typing import Union, Tuple, List, Tuple, Set
+from nptyping import NDArray
 from objective import Objective
+import utils
 
 
-def polyhedron_greedy(f: Objective, x: NDArray[Float64]) -> NDArray[Float64]:
+def polyhedron_greedy(f: Objective, x: NDArray[float],
+                      with_grad=False) -> Union[NDArray[float], Tuple[NDArray[float], bool]]:
     """
     Implementation of Edmonds'71 greedy algorithm.
     :param f: value-oracle for a polymatroid sumodular function
     :param x: vector in \mathbb{R}^{f.n}_{+}
+    :param with_grad: return also the subgradient of f w.r.t. x
     """
 
     # get the indexes of a descent sort of x
     I = x.argsort()[::-1][:f.n]
 
-    # y will be the result, a vertex in the base polyhedron of f
-    y = np.zeros((f.n, ), np.float64)
-
-    # evaluation of f(\varnothing)
-    A_prev = set()
-    f_prev = 0.0
-
-    for i in range(f.n):
+    def reduce_fn(acc: Tuple[List[float], Set[int], float, NDArray[float]], i: int) -> Tuple[List[float], Set[int], float]:
+        (y, A, f_prev, subgrad) = acc
         mask = I[i]
-        A = A_prev | { f.V[mask] }
-        y[mask] = f.value(A) - f_prev
-        A_prev = A
-        f_prev = f_prev + y[mask]
+        A.add(f.V[mask])
+        f_curr = f.value(A)
+        y[mask] = f_curr - f_prev
+        subgrad[i] = y[mask] * utils.set_to_vector(f, { f.V[mask] })
 
+        return (y, A, f_curr, subgrad)
+
+    initializer = (
+        np.zeros(f.n),        # y
+        set(),                # A
+        f.value(set()),       # f(A)
+        np.zeros((f.n, f.n))  # empty matrix for the subgradient
+    )
+    y, _, _, subgrad = reduce(reduce_fn, range(f.n), initializer)
+
+    if with_grad:
+        return y, np.sum(subgrad, axis=0)
+    
     return y
