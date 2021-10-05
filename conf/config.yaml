@@ -21,6 +21,20 @@ sampler:
     # Bounds: (0, 1)
     burn_in_ratio: 0.2
 
+  # parameters related to the Frank-Wolfe Metropolis sampler
+  lovasz_projection:  
+    # ratio of initial burn-in time w.r.t. the total number of iteration of the sampling method.
+    # Bounds: (0, 1)
+    burn_in_ratio: 0.2
+
+    # acceleration rate of the subgradient projected descent
+    eta: 0.01
+
+    # standard deviation of the normal noise
+    std: 0.1
+
+
+
 # dictionary of set-submodular functions
 objectives:
 
@@ -28,23 +42,23 @@ objectives:
   demo_monotone:
 
     # size of the ground set
-    n: 600
+    n: 20
 
   # synthetic non-monotone function: summation of possibly negative random weights
   demo_non_monotone:
 
     # size of the ground set
-    n: 6000
+    n: 20
 
 selected:
   # set-submodular function to mix from
-  objective: 'demo_monotone'
+  objective: 'demo_non_monotone'
 
   # number of samples
-  M: 500000
+  M: 100000
 
   # number of bins for computing the mixing rate
-  n_bins: 5000
+  n_bins: 1000
 
   # set to 1 to print debug info, 0 otherwise
   verbose: 1

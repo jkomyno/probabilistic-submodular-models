@@ -1,11 +1,12 @@
 import numpy as np
 from omegaconf import DictConfig
-from objective import Objective, DemoMonotone, DemoNonMonotone
+from objective import Objective, DemoMonotone, DemoNonMonotone, Delta5
 
 
 OBJ_MAP = {
     'demo_monotone': lambda *args: load_demo_monotone(*args),
     'demo_non_monotone': lambda *args: load_demo_non_monotone(*args),
+    'delta_5': lambda *args: load_delta5(*args),
 }
 
 
@@ -25,6 +26,15 @@ def load_demo_non_monotone(rng: np.random.Generator, params):
     :param params: 'params.demo_non_monotone' dictionary entry in conf/config.yaml
     """
     return DemoNonMonotone(rng, n=params.n)
+
+
+def load_delta5(rng: np.random.Generator, params):
+    """
+    Generate a set-modular, monotone loss function
+    :param rng: numpy random generator instance
+    :param params: 'params.delta_5' dictionary entry in conf/config.yaml
+    """
+    return Delta5(n=params.n, alpha=params.alpha)
 
 
 def get_objective(rng: np.random.Generator, cfg: DictConfig) -> Objective:
