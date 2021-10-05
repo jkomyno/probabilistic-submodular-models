@@ -6,14 +6,14 @@ import operator
 import conf_utils
 import utils
 import sampler
-import usfm
+
+
+# numpy random generator instance
+rng: np.random.Generator = np.random.default_rng(2022)
 
 
 @hydra.main(config_path="conf", config_name="config")
 def run(cfg: DictConfig) -> None:
-    # numpy random generator instance
-    rng: np.random.Generator = np.random.default_rng(2021)
-
     # boolean switch for verbose messages
     is_verbose = bool(cfg.selected.verbose)
 
@@ -31,26 +31,38 @@ def run(cfg: DictConfig) -> None:
     ######################
 
     # Samples from the Gibbs sampler
+    print(f'Computing Gibbs samples...')
     gibbs_samples_f, gibbs_history = sampler.gibbs(f, rng, cfg)
 
     # Samples from the Metropolis sampler
+    print(f'Computing Metropolis samples...')
     metropolis_samples_f, metropolis_history = sampler.metropolis(f, rng, cfg)
 
-    # Samples from the known distribution
-    ground_truth_samples_f, ground_truth_history = sampler.ground_truth(f, rng, cfg)
+    # Samples from the Lovasz-Projection sampler
+    print(f'Computing Lovasz-Projection samples...')
+    lovasz_projection_samples_f, lovasz_projection_history = sampler.lovasz_projection(f, rng, cfg)
 
+    # Samples from the known distribution
+    print(f'Computing Ground-Truth samples...')
+    ground_truth_samples_f, ground_truth_history = sampler.ground_truth(f, rng, cfg)
+    
     if is_verbose:
-        print(f'Gibbs samples')
+        print(f'Gibbs samples ({len(gibbs_samples_f)})')
         for S, frequency in sorted(gibbs_samples_f.items()):
             print(f'{S}: {frequency}')
 
         print(f'')
-        print(f'Metropolis samples')
+        print(f'Metropolis samples ({len(metropolis_samples_f)})')
         for S, frequency in sorted(metropolis_samples_f.items()):
             print(f'{S}: {frequency}')
 
         print(f'')
-        print(f'Ground truth samples')
+        print(f'Lovasz-Projection samples ({len(lovasz_projection_samples_f)})')
+        for S, frequency in sorted(lovasz_projection_samples_f.items()):
+            print(f'{S}: {frequency}')
+
+        print(f'')
+        print(f'Ground truth samples ({len(ground_truth_samples_f)})')
         for S, frequency in sorted(ground_truth_samples_f.items()):
             print(f'{S}: {frequency}')
 
@@ -58,17 +70,21 @@ def run(cfg: DictConfig) -> None:
     #  Compute mixing rate  #
     #########################
 
+    print(f'\nComputing mixing rates...')
+
     # We create n_bins for each sample, and we want to compare each bin to the ground truth's bin
     # f_S: empirical frequency of S
     # p_S: ground truth probability of S
     # \sum_{S \in P(S)} |f_S - p_S|
 
-    gibbs_mixing_rates,\
-        metropolis_mixing_rates = operator.attrgetter('gibbs', 'metropolis')(
+    gibbs_mixing_rates, \
+        metropolis_mixing_rates, \
+        lovasz_projection_mixing_rates = operator.attrgetter('gibbs', 'metropolis', 'lovasz_projection')(
             utils.compute_mixing_rates(f, n_bins,
                                        ground_truth_history=ground_truth_history,
                                        gibbs_history=gibbs_history,
-                                       metropolis_history=metropolis_history))
+                                       metropolis_history=metropolis_history,
+                                       lovasz_projection_history=lovasz_projection_history))
 
     print(f'')
     print(f'Gibbs mixing rates: \n{gibbs_mixing_rates}')
@@ -76,26 +92,9 @@ def run(cfg: DictConfig) -> None:
     print(f'')
     print(f'Metropolis mixing rates: \n{metropolis_mixing_rates}')
 
-
-@hydra.main(config_path="conf", config_name="config")
-def run_fujishige_wolfe(cfg: DictConfig) -> None:
-    # numpy random generator instance
-    rng: np.random.Generator = np.random.default_rng(2021)
-
-    # boolean switch for verbose messages
-    is_verbose = bool(cfg.selected.verbose)
-
-    # objective submodular function
-    f = conf_utils.get_objective(rng, cfg=cfg)
-
-    # run exact set-submodular minimization on f
-    S_star, fw_stats = usfm.fujishige_wolfe(f)
-
-    if is_verbose:
-        print(f'f(S): {f.value(S_star)}')
-        print(f'\nFujishige-Wolfe stats:\n{fw_stats}')
+    print(f'')
+    print(f'Lovasz-Projection mixing rates: \n{lovasz_projection_mixing_rates}')
 
 
 if __name__ == '__main__':
-    # run()
-    run_fujishige_wolfe()
+    run()
