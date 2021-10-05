@@ -23,8 +23,8 @@ class DemoMonotone(Objective):
 
     def value(self, S: AbstractSet[int]):
         """
-        Value oracle for the revenue maximization problem
+        Value oracle for the demo monotone submodular problem
         """
-        x = utils.set_to_vector(self.V, list(S)) @ self.w
+        x = utils.set_to_vector(self, list(S)) @ self.w
         # return decimal.Decimal(x, context=self.ctx)
         return x

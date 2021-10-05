@@ -20,4 +20,4 @@ class DemoNonMonotone(Objective):
         """
         Value oracle for the revenue maximization problem
         """
-        return utils.set_to_vector(self.V, list(S)) @ self.w
+        return utils.set_to_vector(self, list(S)) @ self.w

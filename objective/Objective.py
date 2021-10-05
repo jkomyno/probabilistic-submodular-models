@@ -34,3 +34,6 @@ class Objective(ABC):
         Value oracle for f(I | S) := f(S \cup I) - f(S)
         """
         return self.value(S | I) - self.value(S)
+
+    def __call__(self, S: AbstractSet[int]) -> float:
+        return self.value(S)
