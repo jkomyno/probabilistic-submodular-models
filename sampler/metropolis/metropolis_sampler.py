@@ -26,7 +26,9 @@ def metropolis_sampler(f: Objective, rng: np.random.Generator, cfg: DictConfig) 
     # elements dedicated to the burn-in
     n_burn_in = int(M * burn_in_ratio)
 
-    # run the Gibbs sampler, skipping the initial n_burn_in results
+    print(f'Running Metropolis sampler with M={M}, burn-in ratio={burn_in_ratio}, n_burn_in={n_burn_in}')
+
+    # run the Metropolis sampler, skipping the initial n_burn_in results
     it: Iterator[Set[int]] = itertools.islice(
         metropolis_inner(f=f, rng=rng, M=M + n_burn_in, p_remove=p_remove),
         n_burn_in,
@@ -35,8 +37,8 @@ def metropolis_sampler(f: Objective, rng: np.random.Generator, cfg: DictConfig) 
     # chronological history of Metropolis samples
     metropolis_history = list(it)
 
-    # aggregate the Gibbs samples
-    metropolis_samples_f = Counter((frozenset(X) for X in it))
+    # aggregate the Metropolis samples
+    metropolis_samples_f = Counter((frozenset(X) for X in metropolis_history))
     return metropolis_samples_f, metropolis_history
 
 
@@ -62,7 +64,7 @@ def metropolis_inner(f: Objective, rng: np.random.Generator, M: int, p_remove: f
     X: Set[int] = set(np.where(q() >= mean)[0])
     # yield X
 
-    for t in range(M):
+    for _ in range(M):
         # we use the previous distribution where the mean is the previous iteration
         # draw S ~ q(. | X).
         # We sample S randomly with uniform distribution.

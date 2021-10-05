@@ -23,6 +23,8 @@ def gibbs_sampler(f: Objective, rng: np.random.Generator, cfg: DictConfig) -> Tu
     # elements dedicated to the burn-in
     n_burn_in = int(M * burn_in_ratio)
 
+    print(f'Running Gibbs sampler with M={M}, burn-in ratio={burn_in_ratio}, n_burn_in={n_burn_in}')
+
     # run the Gibbs sampler, skipping the initial n_burn_in results
     it: Iterator[Set[int]] = itertools.islice(
         gibbs_inner(f=f, rng=rng, M=M + n_burn_in),
@@ -62,7 +64,6 @@ def gibbs_inner(f: Objective, rng: np.random.Generator, M: int) -> Iterator[Set[
 
     # deterministically discretize the sample to an initial sampled set
     X: Set[int] = set(np.where(q() >= mean)[0])
-    # yield X
 
     for t in range(M):
         i = rng.integers(low=0, high=n - 1)
@@ -73,9 +74,14 @@ def gibbs_inner(f: Objective, rng: np.random.Generator, M: int) -> Iterator[Set[
         # z is the threshold for the acceptance of the new candidate
         z = rng.uniform(low=0.0, high=1.0)
 
+        # |X_candidate| - |X| == 1
+        X_candidate = set(X)
+        if i in X:
+            X_candidate.remove(i)
+        else:
+            X_candidate.add(i)
+
         if z <= p_add:
-            X.add(i)
-        elif i in X:
-            X.remove(i)
+            X = X_candidate
 
         yield X
