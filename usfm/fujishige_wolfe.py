@@ -67,7 +67,7 @@ def fujishige_wolfe(f: Objective, eps: float = None) -> Set[int]:
     - [1]: https://arxiv.org/pdf/1411.0095.pdf
 
     :params f: polymatroid set-submodular function
-    :params eps:
+    :params eps: error threshold
     """
 
     if eps is None:
