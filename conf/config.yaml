@@ -31,7 +31,7 @@ sampler:
     eta: 0.01
 
     # standard deviation of the normal noise
-    std: 0.1
+    std: 0.5
 
 
 
@@ -52,7 +52,7 @@ objectives:
 
 selected:
   # set-submodular function to mix from
-  objective: 'demo_non_monotone'
+  objective: 'demo_monotone'
 
   # number of samples
   M: 100000

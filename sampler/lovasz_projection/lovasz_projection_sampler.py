@@ -1,6 +1,5 @@
 import numpy as np
 import itertools
-import cvxpy as cvx
 from omegaconf import DictConfig
 from collections import Counter
 from objective import Objective
@@ -41,10 +40,10 @@ def lovasz_projection_sampler(f: Objective, rng: np.random.Generator,
         n_burn_in,
         None)
 
-    # chronological history of Lovasz-Projection-Metropolis samples
+    # chronological history of Lovasz-Projection samples
     lovasz_projection_history = list(it)
 
-    # aggregate the Gibbs samples
+    # aggregate the Lovasz-Projection samples
     lovasz_projection_samples_f = Counter((frozenset(X) for X in lovasz_projection_history))
     return lovasz_projection_samples_f, lovasz_projection_history
 
@@ -88,6 +87,3 @@ def lovasz_projection_inner(f: Objective, rng: np.random.Generator,
         threshold = rng.uniform(low=0.0, high=1.0, size=(f.n, ))
         S = set(np.where(x > threshold)[0])
         yield S
-        
-        # round x to match S
-        x = utils.set_to_vector(f, S)

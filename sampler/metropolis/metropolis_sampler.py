@@ -70,7 +70,6 @@ def metropolis_inner(f: Objective, rng: np.random.Generator, M: int, p_remove: f
         # We sample S randomly with uniform distribution.
         # For each element v in X, add v to S if v \notin S.
         # Otherwise, if v \in S, remove v with a small probability p
-
         S = set(np.where(q() >= mean)[0])
 
         # we sample the probabilities p in batch, it's most likely faster than
@@ -78,10 +77,17 @@ def metropolis_inner(f: Objective, rng: np.random.Generator, M: int, p_remove: f
         ps = rng.uniform(low=0.0, high=1.0, size=n)
 
         for i, v in enumerate(X):
-            if v not in S:
-                S.add(v)
-            elif ps[i] < p_remove:
-                S.remove(v)
+            if ps[i] <= p_remove:
+                if v in S:
+                    S.remove(v)
+                else:
+                    S.add(v)
+
+        # for i in X:
+        #     if i in S:
+        #         S.remove(i)
+        #     else:
+        #         S.add(i)
 
         # the conditional probabilities in the fraction cancel each other out
         p_acc = min(1, np.exp(-f.value(S)) / np.exp(-f.value(X)))
