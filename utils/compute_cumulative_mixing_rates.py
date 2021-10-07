@@ -15,20 +15,23 @@ class MixingRates:
     # lovasz_projection: List[float]
 
 
-def split_in_bins(history: List[AbstractSet[int]], n_bins: int) -> List[List[FrozenSet[int]]]:
-    return list(map(lambda v: v.tolist(), np.array_split(list(map(frozenset, history)), n_bins)))
+def split_in_cumulative_lists(history: List[AbstractSet[int]], step: int):
+    return (
+        list(map(frozenset, history[0:i + step]))
+        for i in range(0, len(history), step)
+    )
 
 
-def compute_mixing_rates(f: Objective, n_bins: int,
-                         ground_truth_history: List[AbstractSet[int]],
-                         gibbs_history: List[AbstractSet[int]],
-                         metropolis_history: List[AbstractSet[int]],
-                         gibbs_gotovos_history: List[AbstractSet[int]],
-                         metropolis_gotovos_history: List[AbstractSet[int]],
-                         lovasz_projection_history: List[AbstractSet[int]]) -> MixingRates:
+def compute_cumulative_mixing_rates(f: Objective, n_cumulative: int,
+                                    ground_truth_history: List[AbstractSet[int]],
+                                    gibbs_history: List[AbstractSet[int]],
+                                    metropolis_history: List[AbstractSet[int]],
+                                    gibbs_gotovos_history: List[AbstractSet[int]],
+                                    metropolis_gotovos_history: List[AbstractSet[int]],
+                                    lovasz_projection_history: List[AbstractSet[int]]) -> MixingRates:
     """
     :param f: submodular function
-    :param n_bins: number of bins for which to compute the mixing rate
+    :param n_cumulative: number of steps for which to compute the cumulative mixing rate
     :param ground_truth_history: chronological history of samples mixed from the ground truth distribution
     :param gibbs_history: chronological history of samples mixed from the Gibbs sampler
     :param metropolis_history: chronological history of samples mixed from the Metropolis sampler
@@ -37,19 +40,19 @@ def compute_mixing_rates(f: Objective, n_bins: int,
     :param lovasz_projection_history: chronological history of samples mixed from the Lovasz-Projection sampler
     :return:
     """
-    ground_truth_bins       = split_in_bins(ground_truth_history, n_bins)
-    gibbs_bins              = split_in_bins(gibbs_history, n_bins)
-    metropolis_bins         = split_in_bins(metropolis_history, n_bins)
-    gibbs_gotovos_bins      = split_in_bins(gibbs_gotovos_history, n_bins)
-    metropolis_gotovos_bins = split_in_bins(metropolis_gotovos_history, n_bins)
-    # lovasz_projection_bins  = split_in_bins(lovasz_projection_history, n_bins)
+    ground_truth_cumulative       = split_in_cumulative_lists(ground_truth_history, n_cumulative)
+    gibbs_cumulative              = split_in_cumulative_lists(gibbs_history, n_cumulative)
+    metropolis_cumulative         = split_in_cumulative_lists(metropolis_history, n_cumulative)
+    gibbs_gotovos_cumulative      = split_in_cumulative_lists(gibbs_gotovos_history, n_cumulative)
+    metropolis_gotovos_cumulative = split_in_cumulative_lists(metropolis_gotovos_history, n_cumulative)
+    # lovasz_projection_cumulative  = split_in_cumulative_lists(lovasz_projection_history, n_cumulative)
 
-    ground_truth_counters       = list(map(Counter, ground_truth_bins))
-    gibbs_counters              = list(map(Counter, gibbs_bins))
-    metropolis_counters         = list(map(Counter, metropolis_bins))
-    gibbs_gotovos_counters      = list(map(Counter, gibbs_gotovos_bins))
-    metropolis_gotovos_counters = list(map(Counter, metropolis_gotovos_bins))
-    # lovasz_projection_counters  = list(map(Counter, lovasz_projection_bins))
+    ground_truth_counters       = list(map(Counter, ground_truth_cumulative))
+    gibbs_counters              = list(map(Counter, gibbs_cumulative))
+    metropolis_counters         = list(map(Counter, metropolis_cumulative))
+    gibbs_gotovos_counters      = list(map(Counter, gibbs_gotovos_cumulative))
+    metropolis_gotovos_counters = list(map(Counter, metropolis_gotovos_cumulative))
+    # lovasz_projection_counters  = list(map(Counter, lovasz_projection_cumulative))
 
     # compute the powerset of f only once
     P_V = list(utils.powerset(f.V))
@@ -57,10 +60,6 @@ def compute_mixing_rates(f: Objective, n_bins: int,
     def mixing_rate_partial(S: FrozenSet[int], ground_truth_counter: Counter, empirical_counter: Counter) -> float:
         f_S: float = empirical_counter[S]
         p_S: float = ground_truth_counter[S]
-
-        print(f'\nS: {S}')
-        print(f'f_S - p_S: {f_S} - {p_S} = {abs(f_S - p_S)}')
-
         return abs(f_S - p_S)
 
     def mixing_rates(empirical_counters: List[Counter]) -> List[float]:
