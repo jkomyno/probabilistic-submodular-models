@@ -11,7 +11,7 @@
 Install the virtual environment:
 
 ```bash
-python -m venv ./venv
+python3 -m venv ./venv
 ```
 
 Activate the virtual environment:
@@ -23,13 +23,13 @@ source ./venv/bin/activate
 Install third-party dependencies:
 
 ```bash
-$ python -m pip install -r requirements.txt
+$ python3 -m pip install -r requirements.txt
 ```
 
 Run:
 
 ```bash
-$ python main.py
+$ python3 -u main.py
 ```
 
 ## Configuration
