@@ -3,19 +3,37 @@ name: probabilistic-submodular-models
 # dictionary of sampler options
 sampler:
 
-  # parameters related to the Metropolis sampler
-  metropolis:
-
-    # probability of removing an element v \in S if v is also \in X.
-    # Bounds: (0, 1)
-    p_remove: 0.2
+  # parameters related to the Gibbs sampler
+  gibbs:
 
     # ratio of initial burn-in time w.r.t. the total number of iteration of the sampling method.
     # Bounds: (0, 1)
     burn_in_ratio: 0.2
 
-  # parameters related to the Gibbs sampler
-  gibbs:
+  # parameters related to the Metropolis sampler
+  metropolis:
+
+    # probability of removing an element v \in S if v is also \in X.
+    # Bounds: (0, 1)
+    p_remove: 0.1
+
+    # ratio of initial burn-in time w.r.t. the total number of iteration of the sampling method.
+    # Bounds: (0, 1)
+    burn_in_ratio: 0.2
+
+  # parameters related to the Gibbs-Gotovos sampler
+  gibbs_gotovos:
+
+    # ratio of initial burn-in time w.r.t. the total number of iteration of the sampling method.
+    # Bounds: (0, 1)
+    burn_in_ratio: 0.2
+
+  # parameters related to the Metropolis-Gotovos sampler
+  metropolis_gotovos:
+
+    # probability of removing an element v \in S if v is also \in X.
+    # Bounds: (0, 1)
+    p_remove: 0.1
 
     # ratio of initial burn-in time w.r.t. the total number of iteration of the sampling method.
     # Bounds: (0, 1)
@@ -42,7 +60,7 @@ objectives:
   demo_monotone:
 
     # size of the ground set
-    n: 20
+    n: 3
 
   # synthetic non-monotone function: summation of possibly negative random weights
   demo_non_monotone:
@@ -59,6 +77,9 @@ selected:
 
   # number of bins for computing the mixing rate
   n_bins: 1000
+
+  # number of steps for which to compute the cumulative mixing rate
+  n_cumulative: 1000
 
   # set to 1 to print debug info, 0 otherwise
   verbose: 1

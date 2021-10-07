@@ -58,9 +58,6 @@ def compute_mixing_rates(f: Objective, n_bins: int,
         f_S: float = empirical_counter[S]
         p_S: float = ground_truth_counter[S]
 
-        print(f'\nS: {S}')
-        print(f'f_S - p_S: {f_S} - {p_S} = {abs(f_S - p_S)}')
-
         return abs(f_S - p_S)
 
     def mixing_rates(empirical_counters: List[Counter]) -> List[float]:
