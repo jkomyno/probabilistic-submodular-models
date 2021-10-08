@@ -73,7 +73,7 @@ def gibbs_gotovos_inner(f: Objective, rng: np.random.Generator, M: int) -> Itera
 
         # Add or remove i to the current state X: the new candidate differs
         # by exactly one element from the previous one.
-        I: Set[int] = { 1 }
+        I: Set[int] = { i }
         exp_delta_f = np.exp(delta_f(I, X))
         p_add = exp_delta_f / (1 + exp_delta_f)
 
