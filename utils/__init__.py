@@ -4,6 +4,8 @@ from .compute_density import compute_density
 from .compute_min_f import compute_min_f
 from .compute_mixing_rates import compute_mixing_rates
 from .compute_cumulative_mixing_rates import compute_cumulative_mixing_rates
+from .compute_bins_probability_distance import compute_bins_probability_distance
+from .compute_cumulative_probability_distance import compute_cumulative_probability_distance
 from .fst import fst
 from .snd import snd
 from .polyhedron_greedy import polyhedron_greedy
