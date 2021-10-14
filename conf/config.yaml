@@ -21,37 +21,20 @@ sampler:
     # Bounds: (0, 1)
     burn_in_ratio: 0.2
 
-  # parameters related to the Gibbs-Gotovos sampler
-  gibbs_gotovos:
-
-    # ratio of initial burn-in time w.r.t. the total number of iteration of the sampling method.
-    # Bounds: (0, 1)
-    burn_in_ratio: 0.2
-
-  # parameters related to the Metropolis-Gotovos sampler
-  metropolis_gotovos:
-
-    # probability of removing an element v \in S if v is also \in X.
-    # Bounds: (0, 1)
-    p_remove: 0.1
-
-    # ratio of initial burn-in time w.r.t. the total number of iteration of the sampling method.
-    # Bounds: (0, 1)
-    burn_in_ratio: 0.2
-
   # parameters related to the Frank-Wolfe Metropolis sampler
   lovasz_projection:  
     # ratio of initial burn-in time w.r.t. the total number of iteration of the sampling method.
     # Bounds: (0, 1)
     burn_in_ratio: 0.2
 
-    # acceleration rate of the subgradient projected descent
+    # step size of the subgradient projected descent
     eta: 0.01
 
+    # momentum of the subgradient projected descent
+    momentum: 0.005
+
     # standard deviation of the normal noise
-    std: 0.5
-
-
+    std: 1
 
 # dictionary of set-submodular functions
 objectives:
@@ -73,13 +56,7 @@ selected:
   objective: 'demo_monotone'
 
   # number of samples
-  M: 100000
-
-  # number of bins for computing the mixing rate
-  n_bins: 1000
-
-  # number of steps for which to compute the cumulative mixing rate
-  n_cumulative: 1000
+  M: 5000
 
   # set to 1 to print debug info, 0 otherwise
   verbose: 1
