@@ -49,39 +49,37 @@ def gibbs_inner(f: Objective, rng: np.random.Generator, M: int) -> Iterator[Set[
     # size of the ground set
     n = len(f.V)
 
-    # average of the uniform distribution in R^n
-    mean = np.full(n, 0.5)
+    # mean of the uniform distribution in R^n
+    mean = 0.5
 
     # we use the uniform distribution as the proposed distribution
     def q() -> NDArray[Float64]:
-        return rng.uniform(low=0.0, high=1.0, size=(n,))
+        return rng.uniform(low=0.0, high=1.0, size=(n, ))
 
     # probabilistic marginal gain
-    def delta_f(i: int, S: Set[int]) -> float:
-        I: Set[int] = {i}
+    def delta_f(I: Set[int], S: Set[int]) -> float:
         return int(i not in S) * f.marginal_gain(I, S) + \
             int(i in S) * f.marginal_gain(I, S - I)
 
     # deterministically discretize the sample to an initial sampled set
     X: Set[int] = set(np.where(q() >= mean)[0])
 
-    for t in range(M):
-        i = rng.integers(low=0, high=n - 1)
-
-        exp_delta_f = np.exp(-delta_f(i, X))
-        p_add = exp_delta_f / (1 + exp_delta_f)
+    for _ in range(M):
+        # select uniformly at random an element in the ground set
+        i = rng.choice(f.V)
 
         # z is the threshold for the acceptance of the new candidate
         z = rng.uniform(low=0.0, high=1.0)
 
-        # |X_candidate| - |X| == 1
-        X_candidate = set(X)
-        if i in X:
-            X_candidate.remove(i)
-        else:
-            X_candidate.add(i)
+        # Add or remove i to the current state X: the new candidate differs
+        # by exactly one element from the previous one.
+        I: Set[int] = { i }
+        exp_delta_f = np.exp(-delta_f(I, X))
+        p_add = exp_delta_f / (1 + exp_delta_f)
 
         if z <= p_add:
-            X = X_candidate
+            X = X | I
+        else:
+            X = X - I
 
         yield X

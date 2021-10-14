@@ -53,42 +53,30 @@ def metropolis_inner(f: Objective, rng: np.random.Generator, M: int, p_remove: f
     # size of the ground set
     n = len(f.V)
 
-    # average of the uniform distribution in R^n
-    mean = np.full(n, 0.5)
+    # mean of the uniform distribution
+    mean = 0.5
 
     # we use the uniform distribution as the proposed distribution
     def q() -> NDArray[Float64]:
         return rng.uniform(low=0.0, high=1.0, size=(n,))
 
-    # deterministically discretize the sample to an initial sampled set
+    # X initially is a random subset of V
     X: Set[int] = set(np.where(q() >= mean)[0])
-    # yield X
 
     for _ in range(M):
-        # we use the previous distribution where the mean is the previous iteration
-        # draw S ~ q(. | X).
-        # We sample S randomly with uniform distribution.
-        # For each element v in X, add v to S if v \notin S.
-        # Otherwise, if v \in S, remove v with a small probability p
-        S = set(np.where(q() >= mean)[0])
+        # We draw the next candidate S, with S ~ q(. | X).
+        S = set(X)
+        threshold = rng.uniform(low=0.0, high=1.0, size=(n, ))
 
-        # we sample the probabilities p in batch, it's most likely faster than
-        # generating them on demand
-        ps = rng.uniform(low=0.0, high=1.0, size=n)
-
-        for i, v in enumerate(X):
-            if ps[i] <= p_remove:
-                if v in S:
-                    S.remove(v)
+        for i, p in zip(f.V, threshold):
+            # with low probability, either add or remove some elements i from S
+            if p <= p_remove:
+                if i in S:
+                    S.remove(i)
                 else:
-                    S.add(v)
+                    S.add(i)
 
-        # for i in X:
-        #     if i in S:
-        #         S.remove(i)
-        #     else:
-        #         S.add(i)
-
+        # p_acc is the probability of accepting the proposal sample S.
         # the conditional probabilities in the fraction cancel each other out
         p_acc = min(1, np.exp(-f.value(S)) / np.exp(-f.value(X)))
 
