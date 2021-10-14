@@ -23,15 +23,15 @@ source ./venv/bin/activate
 Install third-party dependencies:
 
 ```bash
-$ python3 -m pip install -r requirements.txt
+$ python3 -m pip install -r python/requirements.txt
 ```
 
 Run:
 
 ```bash
-$ python3 -u main.py
+$ python3 -u -m python.mcmc_sample
 ```
 
 ## Configuration
 
-Please read and edit [/conf/config.yaml](/conf/config.yaml)
+Please read and edit [/python/conf/config.yaml](/python/conf/config.yaml)
