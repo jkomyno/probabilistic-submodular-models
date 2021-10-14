@@ -18,7 +18,7 @@ def metropolis_sampler(f: Objective, rng: np.random.Generator, cfg: DictConfig) 
     M = cfg.selected.M
 
     # percentage of initial samples to discard
-    burn_in_ratio = cfg.sampler['metropolis'].burn_in_ratio
+    burn_in_ratio = cfg.selected.burn_in_ratio
 
     # probability of removing an element v \in S if v is also \in X
     p_remove = cfg.sampler['metropolis'].p_remove
