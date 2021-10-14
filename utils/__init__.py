@@ -2,8 +2,6 @@ from .set_to_vector import set_to_vector
 from .powerset import powerset
 from .compute_density import compute_density
 from .compute_min_f import compute_min_f
-from .compute_mixing_rates import compute_mixing_rates
-from .compute_cumulative_mixing_rates import compute_cumulative_mixing_rates
 from .compute_bins_probability_distance import compute_bins_probability_distance
 from .compute_cumulative_probability_distance import compute_cumulative_probability_distance
 from .fst import fst
