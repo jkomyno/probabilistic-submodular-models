@@ -6,10 +6,6 @@ sampler:
   # parameters related to the Gibbs sampler
   gibbs:
 
-    # ratio of initial burn-in time w.r.t. the total number of iteration of the sampling method.
-    # Bounds: (0, 1)
-    burn_in_ratio: 0.2
-
   # parameters related to the Metropolis sampler
   metropolis:
 
@@ -17,15 +13,8 @@ sampler:
     # Bounds: (0, 1)
     p_remove: 0.1
 
-    # ratio of initial burn-in time w.r.t. the total number of iteration of the sampling method.
-    # Bounds: (0, 1)
-    burn_in_ratio: 0.2
-
   # parameters related to the Frank-Wolfe Metropolis sampler
-  lovasz_projection:  
-    # ratio of initial burn-in time w.r.t. the total number of iteration of the sampling method.
-    # Bounds: (0, 1)
-    burn_in_ratio: 0.2
+  lovasz_projection: 
 
     # step size of the subgradient projected descent
     eta: 0.01
@@ -54,6 +43,10 @@ objectives:
 selected:
   # set-submodular function to mix from
   objective: 'demo_monotone'
+
+  # ratio of initial burn-in time w.r.t. the total number of iteration of the sampling method.
+  # Bounds: (0, 1)
+  burn_in_ratio: 0.2
 
   # number of samples
   M: 50

@@ -21,7 +21,7 @@ def lovasz_projection_sampler(f: Objective, rng: np.random.Generator,
     M = cfg.selected.M
 
     # percentage of initial samples to discard
-    burn_in_ratio = cfg.sampler['lovasz_projection'].burn_in_ratio
+    burn_in_ratio = cfg.selected.burn_in_ratio
 
     # step size of the subgradient projected descent
     eta = cfg.sampler['lovasz_projection'].eta

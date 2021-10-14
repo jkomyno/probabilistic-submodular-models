@@ -18,7 +18,7 @@ def gibbs_sampler(f: Objective, rng: np.random.Generator, cfg: DictConfig) -> Tu
     M = cfg.selected.M
 
     # percentage of initial samples to discard
-    burn_in_ratio = cfg.sampler['gibbs'].burn_in_ratio
+    burn_in_ratio = cfg.selected.burn_in_ratio
 
     # elements dedicated to the burn-in
     n_burn_in = int(M * burn_in_ratio)

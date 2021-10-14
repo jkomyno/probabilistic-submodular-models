@@ -15,9 +15,6 @@ def mcmc_sample(cfg: DictConfig) -> None:
     # boolean switch for verbose messages
     is_verbose = bool(cfg.selected.verbose)
 
-    # number of samples
-    M = cfg.selected.M
-
     # basedir w.r.t. main.py
     basedir = os.path.join(hydra.utils.get_original_cwd(), Path(__file__).parent.parent.parent)
 
