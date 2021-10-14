@@ -23,8 +23,11 @@ def lovasz_projection_sampler(f: Objective, rng: np.random.Generator,
     # percentage of initial samples to discard
     burn_in_ratio = cfg.sampler['lovasz_projection'].burn_in_ratio
 
-    # acceleration rate of the subgradient projected descent
+    # step size of the subgradient projected descent
     eta = cfg.sampler['lovasz_projection'].eta
+
+    # acceleration rate of the subgradient projected descent
+    momentum = cfg.sampler['lovasz_projection'].momentum
 
     # standard deviation of the normal noise
     std = cfg.sampler['lovasz_projection'].std
@@ -32,11 +35,11 @@ def lovasz_projection_sampler(f: Objective, rng: np.random.Generator,
     # elements dedicated to the burn-in
     n_burn_in = int(M * burn_in_ratio)
 
-    print(f'Running Lovasz-Projection sampler with M={M}, burn-in ratio={burn_in_ratio}, n_burn_in={n_burn_in}, eta={eta}, std={std}')
+    print(f'Running Lovasz-Projection sampler with M={M}, burn-in ratio={burn_in_ratio}, n_burn_in={n_burn_in}, eta={eta}, momentum={momentum}, std={std}')
 
     # run the Lovasz-Projection sampler, skipping the initial n_burn_in results
     it: Iterator[Set[int]] = itertools.islice(
-        lovasz_projection_inner(f=f, rng=rng, M=M + n_burn_in, eta=eta, std=std),
+        lovasz_projection_inner(f=f, rng=rng, M=M + n_burn_in, eta=eta, momentum=momentum, std=std),
         n_burn_in,
         None)
 
@@ -49,15 +52,9 @@ def lovasz_projection_sampler(f: Objective, rng: np.random.Generator,
 
 
 def lovasz_projection_inner(f: Objective, rng: np.random.Generator,
-                            M: int, eta=0.01, std=1.0) -> Iterator[Set[int]]:
+                            M: int, eta: float, momentum: float, std: float) -> Iterator[Set[int]]:   
     # F is the submodular convex closure of f
     F = utils.lovasz(f)
-
-    # initialize x
-    x = np.full((f.n, ), fill_value=1.0)
-
-    # normal noise scale
-    eta_sqrt = np.sqrt(eta)
 
     def project(y_i: NDArray[float]) -> NDArray[float]:
         """
@@ -73,17 +70,51 @@ def lovasz_projection_inner(f: Objective, rng: np.random.Generator,
     # closure that applies the project function component-wise
     project_step = np.vectorize(project)
 
-    for t in range(M):
-        _, grad_f_x = F(x)
-        noise = rng.normal(loc=0.0, scale=std)
+    # size of the ground set
+    n = f.n
 
-        # y = x - eta * grad_f_x
-        y = x - (eta * grad_f_x + eta_sqrt * noise)
+    # mean of the uniform distribution
+    mean = 0.5
+
+    # we use the uniform distribution as the proposed distribution
+    def q() -> NDArray[float]:
+        return rng.uniform(low=0.0, high=1.0, size=(n,))
+
+    # X initially is a random subset of V
+    X: Set[int] = set(np.where(q() >= mean)[0])
+
+    # x is the vector representation of X
+    x = utils.set_to_vector(f, X)
+
+    change = np.full((n, ) , fill_value=0.0)
+    zero = np.full((n, ), fill_value=0.0)
+
+    # normal noise scale
+    eta_sqrt = np.sqrt(eta)
+
+    for _ in range(M):
+        _, grad_f_x = F(x)
+        noise = rng.normal(loc=zero, scale=std, size=(n, ))
+        change = (momentum * change) - (eta * grad_f_x) - (eta_sqrt * noise)
+        y = x + change
 
         # project y back to [0, 1]^n
-        x = project_step(y)
+        s = project_step(y)
 
-        # round iterate to a set
-        threshold = rng.uniform(low=0.0, high=1.0, size=(f.n, ))
-        S = set(np.where(x > threshold)[0])
-        yield S
+        # round current iterate to a set
+        S: Set[int] = set(np.where(q() >= s)[0])
+
+        # p_acc is the probability of accepting the proposal sample S.
+        # the conditional probabilities in the fraction cancel each other out
+        p_acc = min(1, np.exp(-f.value(S)) / np.exp(-f.value(X)))
+
+        # z is the threshold for the acceptance of the new candidate
+        z = rng.uniform(low=0.0, high=1.0)
+
+        # the iterate set could be updated based on p_acc
+        if z <= p_acc:
+            # print(f'accept')
+            X = S
+            x = s
+
+        yield X
