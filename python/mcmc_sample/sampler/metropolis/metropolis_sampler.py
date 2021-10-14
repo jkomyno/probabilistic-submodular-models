@@ -3,11 +3,12 @@ import itertools
 from omegaconf import DictConfig
 from collections import Counter
 from typing import Set, Iterator, Tuple, List
-from nptyping import NDArray, Float64
+from nptyping import NDArray
 from ...objective import Objective
 
 
-def metropolis_sampler(f: Objective, rng: np.random.Generator, cfg: DictConfig) -> Tuple[Counter, List[Set[int]]]:
+def metropolis_sampler(f: Objective, rng: np.random.Generator, 
+                       cfg: DictConfig) -> Tuple[Counter, List[Set[int]]]:
     """
     :param f: submodular function
     :param rng: numpy random generator instance
@@ -15,13 +16,13 @@ def metropolis_sampler(f: Objective, rng: np.random.Generator, cfg: DictConfig) 
     """
 
     # number of samples, excluding the burn-in
-    M = cfg.selected.M
+    M = cfg.sample_size.M
 
     # percentage of initial samples to discard
     burn_in_ratio = cfg.selected.burn_in_ratio
 
     # probability of removing an element v \in S if v is also \in X
-    p_remove = cfg.sampler['metropolis'].p_remove
+    p_remove = cfg.sampler.p_remove
 
     # elements dedicated to the burn-in
     n_burn_in = int(M * burn_in_ratio)
@@ -51,13 +52,13 @@ def metropolis_inner(f: Objective, rng: np.random.Generator, M: int, p_remove: f
     """
 
     # size of the ground set
-    n = len(f.V)
+    n = f.n
 
     # mean of the uniform distribution
     mean = 0.5
 
     # we use the uniform distribution as the proposed distribution
-    def q() -> NDArray[Float64]:
+    def q() -> NDArray[float]:
         return rng.uniform(low=0.0, high=1.0, size=(n,))
 
     # X initially is a random subset of V

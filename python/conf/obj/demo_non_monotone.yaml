@@ -1,0 +1,7 @@
+name: 'demo_non_monotone'
+
+benchmark:
+  ns:
+    - 3
+    - 5
+    - 10

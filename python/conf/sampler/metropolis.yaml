@@ -1,0 +1,6 @@
+# parameters related to the Metropolis sampler
+name: 'metropolis'
+
+# probability of removing an element v \in S if v is also \in X.
+# Bounds: (0, 1)
+p_remove: 0.1

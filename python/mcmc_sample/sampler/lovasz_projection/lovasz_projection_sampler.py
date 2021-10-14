@@ -10,7 +10,7 @@ from ...utils import lovasz, set_to_vector
 
 
 def lovasz_projection_sampler(f: Objective, rng: np.random.Generator,
-                        cfg: DictConfig) -> Tuple[Counter, List[Set[int]]]:
+                              cfg: DictConfig) -> Tuple[Counter, List[Set[int]]]:
     """
     :param f: submodular function
     :param rng: numpy random generator instance
@@ -18,19 +18,19 @@ def lovasz_projection_sampler(f: Objective, rng: np.random.Generator,
     """
 
     # number of samples, excluding the burn-in
-    M = cfg.selected.M
+    M = cfg.sample_size.M
 
     # percentage of initial samples to discard
     burn_in_ratio = cfg.selected.burn_in_ratio
 
     # step size of the subgradient projected descent
-    eta = cfg.sampler['lovasz_projection'].eta
+    eta = cfg.sampler.eta
 
     # acceleration rate of the subgradient projected descent
-    momentum = cfg.sampler['lovasz_projection'].momentum
+    momentum = cfg.sampler.momentum
 
     # standard deviation of the normal noise
-    std = cfg.sampler['lovasz_projection'].std
+    std = cfg.sampler.std
 
     # elements dedicated to the burn-in
     n_burn_in = int(M * burn_in_ratio)

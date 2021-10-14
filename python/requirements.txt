@@ -1,4 +1,5 @@
 hydra-core==1.1
+hydra-joblib-launcher==1.1.5
 omegaconf==2.1.0
 networkx==2.6.2
 scipy==1.4.1

@@ -1,0 +1,9 @@
+name: 'delta_5'
+
+benchmark:
+  ns:
+    - 3
+    - 5
+    - 10
+
+alpha: 0.5
