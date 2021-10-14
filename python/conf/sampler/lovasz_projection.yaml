@@ -1,0 +1,11 @@
+# parameters related to the Lovasz-Projection
+name: 'lovasz_projection' 
+
+# step size of the subgradient projected descent
+eta: 0.01
+
+# momentum of the subgradient projected descent
+momentum: 0.005
+
+# standard deviation of the normal noise
+std: 1
