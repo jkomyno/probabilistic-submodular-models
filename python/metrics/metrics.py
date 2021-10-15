@@ -4,13 +4,7 @@ import pandas as pd
 from omegaconf import DictConfig
 from pathlib import Path
 from typing import Dict, FrozenSet, List
-from . import utils
 from .. import common
-
-
-def read_csv(filepath: str):
-    return pd.read_csv(filepath, sep=',', decimal='.', encoding='utf-8',
-                       index_col=None)
 
 
 def compute_probabilty_distance_df(probability_distances: List[float]) -> pd.DataFrame:
@@ -44,24 +38,24 @@ def metrics(cfg: DictConfig) -> None:
 
         print(f'f_name: {f_name}, sampler_name: {sampler_name}')
 
-        ground_truth_df = read_csv(ground_truth_path)
-        ground_truth_df = utils.add_array(ground_truth_df)
+        ground_truth_df = common.read_csv(ground_truth_path)
+        ground_truth_df = common.add_array(ground_truth_df)
 
         ground_truth_density_map: Dict[FrozenSet[int], float] = {
             S: ground_truth_df['probability'][i] for i, S in enumerate(ground_truth_df['array'].map(vector_to_set))
         }
 
-        history_df = read_csv(history_path)
-        history_df = utils.add_array(history_df)
+        history_df = common.read_csv(history_path)
+        history_df = common.add_array(history_df)
 
-        empirical_cumulative_probabilities = utils.get_cumulative_probabilities(history_df,
-                                                                                powerset=powerset,
-                                                                                vector_to_set=vector_to_set,
-                                                                                step=50)
+        empirical_cumulative_probabilities = common.get_cumulative_probabilities(history_df,
+                                                                                 powerset=powerset,
+                                                                                 vector_to_set=vector_to_set,
+                                                                                 step=50)
         
-        cumulative_probability_distances = utils.compute_probability_distance(ground_truth_density_map,
-                                                                              empirical_cumulative_probabilities,
-                                                                              powerset=powerset)
+        cumulative_probability_distances = common.compute_probability_distance(ground_truth_density_map,
+                                                                               empirical_cumulative_probabilities,
+                                                                               powerset=powerset)
 
         print(f'cumulative_probability_distances:')
         print(cumulative_probability_distances)
