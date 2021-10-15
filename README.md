@@ -23,13 +23,20 @@ source ./venv/bin/activate
 Install third-party dependencies:
 
 ```bash
-$ python3 -m pip install -r python/requirements.txt
+python3 -m pip install -r python/requirements.txt
 ```
 
 Run:
 
 ```bash
-$ python3 -u -m python.mcmc_sample
+python3 -u -m python.mcmc_sample -m \
+  obj=demo_monotone,demo_non_monotone \
+  sample_size=small,middle,big \
+  sampler=gibbs,metropolis,lovasz_projection
+```
+
+```bash
+python3 -u -m python.metrics
 ```
 
 ## Configuration
