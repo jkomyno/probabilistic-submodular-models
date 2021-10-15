@@ -4,6 +4,6 @@ benchmark:
   ns:
     - 3
     - 5
-    - 10
+    # - 10
 
 alpha: 0.5
