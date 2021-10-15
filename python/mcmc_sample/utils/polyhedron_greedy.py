@@ -3,7 +3,7 @@ from functools import reduce
 from typing import Union, Tuple, List, Tuple, Set
 from nptyping import NDArray
 from ..objective import Objective
-from ..utils import set_to_vector
+from ... import common
 
 
 def polyhedron_greedy(f: Objective, x: NDArray[float],
@@ -14,6 +14,7 @@ def polyhedron_greedy(f: Objective, x: NDArray[float],
     :param x: vector in \mathbb{R}^{f.n}_{+}
     :param with_grad: return also the subgradient of f w.r.t. x
     """
+    set_to_vector = common.set_to_vector(f.V)
 
     # get the indexes of a descent sort of x
     I = x.argsort()[::-1][:f.n]
@@ -24,7 +25,7 @@ def polyhedron_greedy(f: Objective, x: NDArray[float],
         A.add(f.V[mask])
         f_curr = f.value(A)
         y[mask] = f_curr - f_prev
-        subgrad[i] = y[mask] * set_to_vector(f, { f.V[mask] })
+        subgrad[i] = y[mask] * set_to_vector({ f.V[mask] })
 
         return (y, A, f_curr, subgrad)
 

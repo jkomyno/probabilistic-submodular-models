@@ -6,7 +6,8 @@ from collections import Counter
 from typing import Set, Iterator, Tuple, List
 from nptyping import NDArray
 from ...objective import Objective
-from ...utils import lovasz, set_to_vector
+from ...utils import lovasz
+from .... import common
 
 
 def lovasz_projection_sampler(f: Objective, rng: np.random.Generator,
@@ -56,6 +57,9 @@ def lovasz_projection_inner(f: Objective, rng: np.random.Generator,
     # F is the submodular convex closure of f
     F = lovasz(f)
 
+    # convert a given set to vector representation
+    set_to_vector = common.set_to_vector(f.V)
+
     def project(y_i: NDArray[float]) -> NDArray[float]:
         """
         Perform a Euclidean projection step
@@ -84,7 +88,7 @@ def lovasz_projection_inner(f: Objective, rng: np.random.Generator,
     X: Set[int] = set(np.where(q() >= mean)[0])
 
     # x is the vector representation of X
-    x = set_to_vector(f, X)
+    x = set_to_vector(X)
 
     change = np.full((n, ) , fill_value=0.0)
     zero = np.full((n, ), fill_value=0.0)

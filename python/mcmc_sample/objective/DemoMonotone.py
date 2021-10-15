@@ -1,7 +1,7 @@
 import numpy as np
 from typing import AbstractSet
 from .Objective import Objective
-from ..utils import set_to_vector
+from ... import common
 
 
 class DemoMonotone(Objective):
@@ -20,10 +20,13 @@ class DemoMonotone(Objective):
         self.w = rng.uniform(low=0.0, high=1.0, size=n)
         np.sort(self.w)
 
+        # convert a given set to vector representation
+        self.set_to_vector = common.set_to_vector(self.V)
+
     def value(self, S: AbstractSet[int]):
         """
         Value oracle for the demo monotone submodular problem
         """
-        x = set_to_vector(self, list(S)) @ self.w
+        x = self.set_to_vector(S) @ self.w
         # return decimal.Decimal(x, context=self.ctx)
         return x

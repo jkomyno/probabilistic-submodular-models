@@ -1,8 +1,7 @@
 import numpy as np
 from typing import AbstractSet
 from ..objective import Objective
-from .powerset import powerset
-
+from ... import common
 
 def compute_density_numerator(f: Objective):
     def density_numerator(S: AbstractSet[int]) -> float:
@@ -21,7 +20,8 @@ def compute_normalizing_constant(f: Objective):
     Time: O(2^n)
     """
     density_numerator = compute_density_numerator(f)
-    Z: float = sum(density_numerator(S) for S in powerset(f.V))
+    powerset = common.powerset(f.V)
+    Z: float = sum(density_numerator(S) for S in powerset())
     return Z
 
 

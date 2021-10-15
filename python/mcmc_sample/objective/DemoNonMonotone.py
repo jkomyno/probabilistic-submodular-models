@@ -1,7 +1,7 @@
 import numpy as np
 from typing import AbstractSet
 from .Objective import Objective
-from ..utils import set_to_vector
+from ... import common
 
 
 class DemoNonMonotone(Objective):
@@ -16,8 +16,11 @@ class DemoNonMonotone(Objective):
         # generate n random weights
         self.w = rng.integers(low=-10, high=10, size=n)
 
+        # convert a given set to vector representation
+        self.set_to_vector = common.set_to_vector(self.V)
+
     def value(self, S: AbstractSet[int]) -> int:
         """
         Value oracle for the revenue maximization problem
         """
-        return set_to_vector(self, list(S)) @ self.w
+        return self.set_to_vector(S) @ self.w
