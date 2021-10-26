@@ -1,6 +1,6 @@
 # parameters related to the Metropolis sampler
 name: 'metropolis'
 
-# probability of removing an element v \in S if v is also \in X.
+# probability of removing an element i if it appears in S, or to add it if it does not.
 # Bounds: (0, 1)
-p_remove: 0.1
+p_add_remove: 0.1

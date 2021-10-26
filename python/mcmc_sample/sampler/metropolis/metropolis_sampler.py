@@ -22,7 +22,7 @@ def metropolis_sampler(f: Objective, rng: np.random.Generator,
     burn_in_ratio = cfg.selected.burn_in_ratio
 
     # probability of removing an element v \in S if v is also \in X
-    p_remove = cfg.sampler.p_remove
+    p_add_remove = cfg.sampler.p_add_remove
 
     # elements dedicated to the burn-in
     n_burn_in = int(M * burn_in_ratio)
@@ -31,7 +31,7 @@ def metropolis_sampler(f: Objective, rng: np.random.Generator,
 
     # run the Metropolis sampler, skipping the initial n_burn_in results
     it: Iterator[Set[int]] = itertools.islice(
-        metropolis_inner(f=f, rng=rng, M=M + n_burn_in, p_remove=p_remove),
+        metropolis_inner(f=f, rng=rng, M=M + n_burn_in, p_add_remove=p_add_remove),
         n_burn_in,
         None)
 
@@ -43,12 +43,12 @@ def metropolis_sampler(f: Objective, rng: np.random.Generator,
     return metropolis_samples_f, metropolis_history
 
 
-def metropolis_inner(f: Objective, rng: np.random.Generator, M: int, p_remove: float) -> Iterator[Set[int]]:
+def metropolis_inner(f: Objective, rng: np.random.Generator, M: int, p_add_remove: float) -> Iterator[Set[int]]:
     """
     :param f: submodular function
     :param rng: numpy random generator instance
     :param M: number of samples, excluding the burn-in
-    :param p_remove: probability of removing an element v \in S if v is also \in X
+    :param p_add_remove: probability of removing an element i if it appears in S, or to add it if it does not
     """
 
     # size of the ground set
@@ -71,7 +71,7 @@ def metropolis_inner(f: Objective, rng: np.random.Generator, M: int, p_remove: f
 
         for i, p in zip(f.V, threshold):
             # with low probability, either add or remove some elements i from S
-            if p <= p_remove:
+            if p <= p_add_remove:
                 if i in S:
                     S.remove(i)
                 else:
