@@ -28,7 +28,7 @@ def lovasz_projection_sampler(f: Objective, rng: np.random.Generator,
     eta = cfg.sampler.eta
 
     # acceleration rate of the subgradient projected descent
-    momentum = cfg.sampler.momentum
+    # momentum = cfg.sampler.momentum
 
     # standard deviation of the normal noise
     std = cfg.sampler.std
@@ -36,11 +36,11 @@ def lovasz_projection_sampler(f: Objective, rng: np.random.Generator,
     # elements dedicated to the burn-in
     n_burn_in = int(M * burn_in_ratio)
 
-    print(f'Running Lovasz-Projection sampler with M={M}, burn-in ratio={burn_in_ratio}, n_burn_in={n_burn_in}, eta={eta}, momentum={momentum}, std={std}')
+    print(f'Running Lovasz-Projection sampler with M={M}, burn-in ratio={burn_in_ratio}, n_burn_in={n_burn_in}, eta={eta}, std={std}')
 
     # run the Lovasz-Projection sampler, skipping the initial n_burn_in results
     it: Iterator[Set[int]] = itertools.islice(
-        lovasz_projection_inner(f=f, rng=rng, M=M + n_burn_in, eta=eta, momentum=momentum, std=std),
+        lovasz_projection_inner(f=f, rng=rng, M=M + n_burn_in, eta=eta, std=std),
         n_burn_in,
         None)
 
@@ -53,7 +53,7 @@ def lovasz_projection_sampler(f: Objective, rng: np.random.Generator,
 
 
 def lovasz_projection_inner(f: Objective, rng: np.random.Generator,
-                            M: int, eta: float, momentum: float, std: float) -> Iterator[Set[int]]:   
+                            M: int, eta: float, std: float) -> Iterator[Set[int]]:   
     # F is the submodular convex closure of f
     F = lovasz(f)
 
@@ -99,7 +99,7 @@ def lovasz_projection_inner(f: Objective, rng: np.random.Generator,
     for _ in range(M):
         _, grad_f_x = F(x)
         noise = rng.normal(loc=zero, scale=std, size=(n, ))
-        change = (momentum * change) - (eta * grad_f_x) - (eta_sqrt * noise)
+        change = 0 - (eta * grad_f_x) - (eta_sqrt * noise)
         y = x + change
 
         # project y back to [0, 1]^n
@@ -117,7 +117,6 @@ def lovasz_projection_inner(f: Objective, rng: np.random.Generator,
 
         # the iterate set could be updated based on p_acc
         if z <= p_acc:
-            # print(f'accept')
             X = S
             x = s
 
