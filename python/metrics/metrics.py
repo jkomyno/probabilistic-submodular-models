@@ -3,8 +3,9 @@ import hydra
 import pandas as pd
 from omegaconf import DictConfig
 from pathlib import Path
-from typing import Dict, FrozenSet, List
+from typing import List
 from .. import common
+from . import utils
 
 
 def compute_probabilty_distance_df(probability_distances: List[float]) -> pd.DataFrame:
@@ -12,6 +13,30 @@ def compute_probabilty_distance_df(probability_distances: List[float]) -> pd.Dat
         [{ 'i': i, 'distance': distance }
         for i, distance in enumerate(probability_distances)]
     )
+
+
+def metrics_sampler(traverser: utils.Traverser):
+    # size of the cumulative step
+    n_steps = 50
+
+    empirical_cumulative_probabilities = common.get_cumulative_probabilities(
+        traverser.history_df,
+        powerset=traverser.powerset,
+        vector_to_set=traverser.vector_to_set,
+        step=n_steps)
+    
+    cumulative_probability_distances = common.compute_probability_distance(
+        traverser.ground_truth_density_map,
+        empirical_cumulative_probabilities,
+        powerset=traverser.powerset)
+
+    print(f'cumulative_probability_distances:')
+    print(cumulative_probability_distances)
+    print(f'\n\n')
+
+    cumulative_probability_distances_df = compute_probabilty_distance_df(cumulative_probability_distances)
+    common.to_csv(out_dir=traverser.out_dir, df=cumulative_probability_distances_df,
+                    name='cumulative_probability_distances', create_path=False)
 
 
 @hydra.main(config_path="../conf", config_name="config")
@@ -22,45 +47,29 @@ def metrics(cfg: DictConfig) -> None:
     # basedir w.r.t. main.py
     basedir = os.path.join(hydra.utils.get_original_cwd(), Path(__file__).parent.parent.parent)
     
-    for history_path in Path(os.path.join(basedir, 'out')).rglob('**/history.csv'):
-        ground_truth_path = f'{history_path.parent.parent.parent}/ground_truth.csv'
+    # size of the cumulative step
+    n_steps = 50
 
-        f_name, n_str, M_str, sampler_name = history_path.parent.parts[-4:]
-        n = int(n_str.split('-')[1])
-        M = int(M_str.split('-')[1])
+    ###############################
+    #  lovasz_projection sampler  #
+    ###############################
 
-        # ground set
-        V = list(range(n))
+    sampler_name = 'lovasz_projection'
+    for traverser in utils.traverse_lovasz_projection(basedir, sampler_name=sampler_name):
+        metrics_sampler(traverser)
 
-        # instantiate closures that use the ground set
-        powerset = common.powerset(V)
-        vector_to_set = common.vector_to_set(V)
+    ###################
+    #  gibbs sampler  #
+    ###################
 
-        print(f'f_name: {f_name}, sampler_name: {sampler_name}')
+    sampler_name = 'gibbs'
+    for traverser in utils.traverse_sampler(basedir, sampler_name=sampler_name):
+        metrics_sampler(traverser)
 
-        ground_truth_df = common.read_csv(ground_truth_path)
-        ground_truth_df = common.add_array(ground_truth_df)
+    ########################
+    #  metropolis sampler  #
+    ########################
 
-        ground_truth_density_map: Dict[FrozenSet[int], float] = {
-            S: ground_truth_df['probability'][i] for i, S in enumerate(ground_truth_df['array'].map(vector_to_set))
-        }
-
-        history_df = common.read_csv(history_path)
-        history_df = common.add_array(history_df)
-
-        empirical_cumulative_probabilities = common.get_cumulative_probabilities(history_df,
-                                                                                 powerset=powerset,
-                                                                                 vector_to_set=vector_to_set,
-                                                                                 step=50)
-        
-        cumulative_probability_distances = common.compute_probability_distance(ground_truth_density_map,
-                                                                               empirical_cumulative_probabilities,
-                                                                               powerset=powerset)
-
-        print(f'cumulative_probability_distances:')
-        print(cumulative_probability_distances)
-        print(f'\n\n')
-
-        cumulative_probability_distances_df = compute_probabilty_distance_df(cumulative_probability_distances)
-        common.to_csv(out_dir=history_path.parent, df=cumulative_probability_distances_df,
-                      name='cumulative_probability_distances', create_path=False)
+    sampler_name = 'metropolis'
+    for traverser in utils.traverse_sampler(basedir, sampler_name=sampler_name):
+        metrics_sampler(traverser)
