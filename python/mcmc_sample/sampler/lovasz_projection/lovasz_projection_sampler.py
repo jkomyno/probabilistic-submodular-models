@@ -93,13 +93,12 @@ def lovasz_projection_inner(f: Objective, rng: np.random.Generator,
     change = np.full((n, ) , fill_value=0.0)
     zero = np.full((n, ), fill_value=0.0)
 
-    # normal noise scale
-    eta_sqrt = np.sqrt(eta)
+    for t in range(1, M + 1):
+        eta = 1 / (1 + t)
 
-    for _ in range(M):
         _, grad_f_x = F(x)
         noise = rng.normal(loc=zero, scale=std, size=(n, ))
-        change = 0 - (eta * grad_f_x) - (eta_sqrt * noise)
+        change = 0 - (eta * grad_f_x) - (np.sqrt(eta) * noise)
         y = x + change
 
         # project y back to [0, 1]^n
