@@ -11,10 +11,13 @@ from .... import common
 
 
 def lovasz_projection_sampler(f: Objective, rng: np.random.Generator,
+                              std: float, eta: float,
                               cfg: DictConfig) -> Tuple[Counter, List[Set[int]]]:
     """
     :param f: submodular function
     :param rng: numpy random generator instance
+    :param std: standard deviation of the noise
+    :param eta: step size of the subgradient projected descent
     :param cfg: Hydra configuration dictionary
     """
 
@@ -24,14 +27,8 @@ def lovasz_projection_sampler(f: Objective, rng: np.random.Generator,
     # percentage of initial samples to discard
     burn_in_ratio = cfg.selected.burn_in_ratio
 
-    # step size of the subgradient projected descent
-    eta = cfg.sampler.eta
-
     # acceleration rate of the subgradient projected descent
     # momentum = cfg.sampler.momentum
-
-    # standard deviation of the normal noise
-    std = cfg.sampler.std
 
     # elements dedicated to the burn-in
     n_burn_in = int(M * burn_in_ratio)
@@ -92,13 +89,12 @@ def lovasz_projection_inner(f: Objective, rng: np.random.Generator,
 
     change = np.full((n, ) , fill_value=0.0)
     zero = np.full((n, ), fill_value=0.0)
+    eta_sqrt = np.sqrt(eta)
 
-    for t in range(1, M + 1):
-        eta = 1 / (1 + t)
-
+    for _ in range(M):
         _, grad_f_x = F(x)
         noise = rng.normal(loc=zero, scale=std, size=(n, ))
-        change = 0 - (eta * grad_f_x) - (np.sqrt(eta) * noise)
+        change = zero - (eta * grad_f_x) - (eta_sqrt * noise)
         y = x + change
 
         # project y back to [0, 1]^n

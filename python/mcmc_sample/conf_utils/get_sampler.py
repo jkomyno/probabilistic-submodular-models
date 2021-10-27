@@ -1,9 +1,9 @@
 import numpy as np
 from omegaconf import DictConfig
 from collections import Counter
+from typing import Tuple, List, Set, Iterator, Callable, Any
 from .. import sampler
 from ..objective import Objective
-from typing import Tuple, List, Set
 
 
 SAMPLER_MAP = {
@@ -19,7 +19,7 @@ def load_gibbs(f: Objective, rng: np.random.Generator,
         samples_f, history = sampler.gibbs(f, rng, cfg)
         return samples_f, history
 
-    return load
+    yield load, None
 
 
 def load_metropolis(f: Objective, rng: np.random.Generator,
@@ -28,20 +28,22 @@ def load_metropolis(f: Objective, rng: np.random.Generator,
         samples_f, history = sampler.metropolis(f, rng, cfg)
         return samples_f, history
 
-    return load
+    yield load, None
 
 
 def load_lovasz_projection(f: Objective, rng: np.random.Generator,
                            cfg: DictConfig):
-    def load() -> Tuple[Counter, List[Set[int]]]:
-        samples_f, history = sampler.lovasz_projection(f, rng, cfg)
-        return samples_f, history
+    for std in cfg.sampler.std:
+        for eta in cfg.sampler.eta:
+            def load() -> Tuple[Counter, List[Set[int]]]:
+                samples_f, history = sampler.lovasz_projection(f, rng, std=std, eta=eta, cfg=cfg)
+                return samples_f, history
 
-    return load
+            yield load, (std, eta)
 
 
 def get_sampler(f: Objective, rng: np.random.Generator,
-                cfg: DictConfig):
+                cfg: DictConfig) -> Iterator[Tuple[Callable[[], Tuple[Counter, List[Set[int]]]], Any]]:
     """
     Return an instance of the selected sampler.
     :param f: probabilistic submodular model

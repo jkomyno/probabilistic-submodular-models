@@ -2,13 +2,14 @@ from ..rng import rng
 import os
 import hydra
 import pandas as pd
+import numpy as np
 from omegaconf import DictConfig
 from pathlib import Path
 from .objective import Objective
 from . import conf_utils
 from . import utils
 from .. import common
-from typing import Dict, FrozenSet, List, Set
+from typing import Dict, FrozenSet, List, Set, Any
 
 
 def compute_probabilty_df(f: Objective,
@@ -31,6 +32,16 @@ def compute_history_df(f: Objective,
             for i, S in enumerate(history)
         ]
     )
+
+
+def compute_sampler_folder(sampler_name: str, sampler_params: Any) -> str:
+    if sampler_name == 'lovasz_projection':
+        std, eta = sampler_params
+        std_as_str = np.format_float_positional(std)
+        eta_as_str = np.format_float_positional(eta)
+        return f'{sampler_name}/std-{std_as_str}/eta-{eta_as_str}'
+    else:
+        return sampler_name
 
 
 @hydra.main(config_path="../conf", config_name="config")
@@ -64,18 +75,19 @@ def mcmc_sample(cfg: DictConfig) -> None:
             df = compute_probabilty_df(f, ground_truth_density_map)
             common.to_csv(out_ground_truth, df, name='ground_truth', create_path=True)
 
-        # import the selected sampler
+        # import the selected sampler, distinguishing among the different parameters used
         sampler_name = cfg.sampler.name
-        sample = conf_utils.get_sampler(f=f, rng=rng, cfg=cfg)
-        samples_f, history = sample()
+        for sample, sampler_params in conf_utils.get_sampler(f=f, rng=rng, cfg=cfg):
+            samples_f, history = sample()
 
-        # output folder for the samplers history CSVs
-        out_history = f'{basedir}/out/{f_name}/n-{f.n}/M-{M}/{sampler_name}'
+            # output folder for the samplers history CSVs
+            sampler_folder = compute_sampler_folder(sampler_name, sampler_params)
+            out_history = f'{basedir}/out/{f_name}/n-{f.n}/M-{M}/{sampler_folder}'
 
-        # run the selected sampler
-        print(f'')
-        print(f'{sampler_name} samples ({len(samples_f)})')
-        df = compute_history_df(f, history)
-        common.to_csv(out_history, df, name=f'history', create_path=True)
+            # run the selected sampler
+            print(f'')
+            print(f'{sampler_name} samples ({len(samples_f)})')
+            df = compute_history_df(f, history)
+            common.to_csv(out_history, df, name=f'history', create_path=True)
 
-        print(f'')
+            print(f'')
