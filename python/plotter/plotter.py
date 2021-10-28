@@ -11,18 +11,18 @@ def plot_sampler(sampler_name: str, traverser: utils.Traverser):
     n_steps = 50
 
     cumulative_probability_distances_df = common.read_csv(traverser.cumulative_probability_distances_path)
-    empirical_cumulative_probabilities = common.get_cumulative_probabilities(
-        traverser.history_df,
-        powerset=traverser.powerset,
-        vector_to_set=traverser.vector_to_set,
-        step=n_steps)
+    # empirical_cumulative_probabilities = common.get_cumulative_probabilities(
+    #     traverser.history_df,
+    #     powerset=traverser.powerset,
+    #     vector_to_set=traverser.vector_to_set,
+    #     step=n_steps)
 
     # plot empirical probability vs ground truth probability of subsets of V 
-    utils.plot_empirical_subset_probabilities(
-        empirical_cumulative_probabilities,
-        sampler_name=sampler_name,
-        step=n_steps,
-        traverser=traverser)
+    # utils.plot_empirical_subset_probabilities(
+    #     empirical_cumulative_probabilities,
+    #     sampler_name=sampler_name,
+    #     step=n_steps,
+    #     traverser=traverser)
 
     # plot cumulative probability distances  
     utils.plot_cumulative_probability_distances(
