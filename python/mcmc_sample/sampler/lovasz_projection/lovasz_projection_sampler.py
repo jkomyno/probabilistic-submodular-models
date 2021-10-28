@@ -89,12 +89,20 @@ def lovasz_projection_inner(f: Objective, rng: np.random.Generator,
 
     change = np.full((n, ) , fill_value=0.0)
     zero = np.full((n, ), fill_value=0.0)
-    eta_sqrt = np.sqrt(eta)
 
-    for _ in range(M):
+    is_eta_descending = eta == 'descending'
+    if is_eta_descending:
+        eta = 1.0
+
+    for t in range(1, M + 1):
         _, grad_f_x = F(x)
         noise = rng.normal(loc=zero, scale=std, size=(n, ))
-        change = zero - (eta * grad_f_x) - (eta_sqrt * noise)
+
+        if is_eta_descending:
+            eta = (1 / (1 + t))
+            print(f'eta: {common.float_to_str(eta)}')
+
+        change = zero - (eta * grad_f_x) - (np.sqrt(eta) * noise)
         y = x + change
 
         # project y back to [0, 1]^n

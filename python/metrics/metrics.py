@@ -47,9 +47,6 @@ def metrics(cfg: DictConfig) -> None:
     # basedir w.r.t. main.py
     basedir = os.path.join(hydra.utils.get_original_cwd(), Path(__file__).parent.parent.parent)
     
-    # size of the cumulative step
-    n_steps = 50
-
     ###############################
     #  lovasz_projection sampler  #
     ###############################

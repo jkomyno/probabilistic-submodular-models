@@ -10,11 +10,11 @@ def traverse_lovasz_projection(basedir: str, sampler_name: str) -> Iterator[Trav
         ground_truth_path = f'{history_path.parent.parent.parent.parent.parent}/ground_truth.csv'
         cumulative_probability_distances_path = f'{history_path.parent}/cumulative_probability_distances.csv'
         
-        f_name, n_str, M_str, sampler_name, std_str, eta_str = history_path.parent.parts[-6:]
-        n = int(n_str.split('-')[1])
-        M = int(M_str.split('-')[1])
-        std = float(std_str.split('-')[1])
-        eta = float(eta_str.split('-')[1])
+        f_name, n_raw, M_raw, sampler_name, std_raw, eta_raw = history_path.parent.parts[-6:]
+        n = int(n_raw.split('-')[1])
+        M = int(M_raw.split('-')[1])
+        std_std = std_raw.split('-')[1]
+        eta_std = eta_raw.split('-')[1]
         
         # create 'plots' subfolder
         out_dir = f'{history_path.parent}/plots'
