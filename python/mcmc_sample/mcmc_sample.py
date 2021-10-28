@@ -37,8 +37,8 @@ def compute_history_df(f: Objective,
 def compute_sampler_folder(sampler_name: str, sampler_params: Any) -> str:
     if sampler_name == 'lovasz_projection':
         std, eta = sampler_params
-        std_as_str = np.format_float_positional(std)
-        eta_as_str = np.format_float_positional(eta)
+        std_as_str = common.float_to_str(std)
+        eta_as_str = common.float_to_str(eta) if type(eta) == float else eta
         return f'{sampler_name}/std-{std_as_str}/eta-{eta_as_str}'
     else:
         return sampler_name

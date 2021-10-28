@@ -7,3 +7,4 @@ from .read_csv import read_csv
 from .set_to_vector import set_to_vector
 from .to_csv import to_csv
 from .vector_to_set import vector_to_set
+from .float_to_str import float_to_str
