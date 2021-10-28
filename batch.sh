@@ -6,7 +6,7 @@
 #SBATCH --ntasks-per-node=1
 #SBATCH --cpus-per-task=4
 #SBATCH --mem=32GB
-#SBATCH --time=1:00:00:00
+#SBATCH --time=24:00:00
 #SBATCH --error=stderr.txt
 #SBATCH --output=stdout.txt
 #SBATCH --partition=cpu
