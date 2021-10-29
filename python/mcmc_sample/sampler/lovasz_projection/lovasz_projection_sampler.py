@@ -24,6 +24,7 @@ def lovasz_projection_sampler(f: Objective, rng: np.random.Generator,
     # number of samples, excluding the burn-in
     M = cfg.sample_size.M
 
+    """
     # percentage of initial samples to discard
     burn_in_ratio = cfg.selected.burn_in_ratio
 
@@ -43,6 +44,10 @@ def lovasz_projection_sampler(f: Objective, rng: np.random.Generator,
 
     # chronological history of Lovasz-Projection samples
     lovasz_projection_history = list(it)
+    """
+
+    print(f'Running Lovasz-Projection sampler with M={M}, no burn-in, eta={eta}, std={std}')
+    lovasz_projection_history = list(lovasz_projection_inner(f=f, rng=rng, M=M, eta=eta, std=std))
 
     # aggregate the Lovasz-Projection samples
     lovasz_projection_samples_f = Counter((frozenset(X) for X in lovasz_projection_history))
