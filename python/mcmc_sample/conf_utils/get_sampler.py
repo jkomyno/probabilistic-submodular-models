@@ -10,6 +10,9 @@ SAMPLER_MAP = {
     'gibbs': lambda *args: load_gibbs(*args),
     'metropolis': lambda *args: load_metropolis(*args),
     'lovasz_projection': lambda *args: load_lovasz_projection(*args),
+    'lovasz_projection_descending': lambda *args: load_lovasz_projection_descending(*args),
+    'lovasz_projection_continuous': lambda *args: load_lovasz_continuous_projection(*args),
+    'lovasz_projection_continuous_descending': lambda *args: load_lovasz_projection_continuous_descending(*args),
 }
 
 
@@ -40,6 +43,37 @@ def load_lovasz_projection(f: Objective, rng: np.random.Generator,
                 return samples_f, history
 
             yield load, (std, eta)
+
+
+def load_lovasz_continuous_projection(f: Objective, rng: np.random.Generator,
+                                      cfg: DictConfig):
+    for std in cfg.sampler.std:
+        for eta in cfg.sampler.eta:
+            def load() -> Tuple[Counter, List[Set[int]]]:
+                samples_f, history = sampler.lovasz_projection_continuous(f, rng, std=std, eta=eta, cfg=cfg)
+                return samples_f, history
+
+            yield load, (std, eta)
+
+
+def load_lovasz_projection_descending(f: Objective, rng: np.random.Generator,
+                           cfg: DictConfig):
+    for std in cfg.sampler.std:
+        def load() -> Tuple[Counter, List[Set[int]]]:
+            samples_f, history = sampler.lovasz_projection_descending(f, rng, std=std, cfg=cfg)
+            return samples_f, history
+
+        yield load, (std, 'descending')
+
+
+def load_lovasz_projection_continuous_descending(f: Objective, rng: np.random.Generator,
+                                                 cfg: DictConfig):
+    for std in cfg.sampler.std:
+        def load() -> Tuple[Counter, List[Set[int]]]:
+            samples_f, history = sampler.lovasz_projection_continuous_descending(f, rng, std=std, cfg=cfg)
+            return samples_f, history
+
+        yield load, (std, 'descending')
 
 
 def get_sampler(f: Objective, rng: np.random.Generator,

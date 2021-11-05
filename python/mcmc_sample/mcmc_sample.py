@@ -35,11 +35,16 @@ def compute_history_df(f: Objective,
 
 
 def compute_sampler_folder(sampler_name: str, sampler_params: Any) -> str:
-    if sampler_name == 'lovasz_projection':
+    if sampler_name == 'lovasz_projection' or sampler_name == 'lovasz_projection_descending':
         std, eta = sampler_params
         std_as_str = common.float_to_str(std)
         eta_as_str = common.float_to_str(eta) if type(eta) == float else eta
-        return f'{sampler_name}/std-{std_as_str}/eta-{eta_as_str}'
+        return f'lovasz_projection/std-{std_as_str}/eta-{eta_as_str}'
+    elif sampler_name == 'lovasz_projection_continuous' or sampler_name == 'lovasz_projection_continuous_descending':
+        std, eta = sampler_params
+        std_as_str = common.float_to_str(std)
+        eta_as_str = common.float_to_str(eta) if type(eta) == float else eta
+        return f'lovasz_projection_continuous/std-{std_as_str}/eta-{eta_as_str}'
     else:
         return sampler_name
 

@@ -10,21 +10,18 @@ from ...utils import lovasz
 from .... import common
 
 
-def lovasz_projection_sampler(f: Objective, rng: np.random.Generator,
-                              std: float, eta: float,
-                              cfg: DictConfig) -> Tuple[Counter, List[Set[int]]]:
+def lovasz_projection_descending_sampler(f: Objective, rng: np.random.Generator,
+                                         std: float, cfg: DictConfig) -> Tuple[Counter, List[Set[int]]]:
     """
     :param f: submodular function
     :param rng: numpy random generator instance
     :param std: standard deviation of the noise
-    :param eta: step size of the subgradient projected descent
     :param cfg: Hydra configuration dictionary
     """
 
     # number of samples, excluding the burn-in
     M = cfg.sample_size.M
 
-    """
     # percentage of initial samples to discard
     burn_in_ratio = cfg.selected.burn_in_ratio
 
@@ -34,28 +31,24 @@ def lovasz_projection_sampler(f: Objective, rng: np.random.Generator,
     # elements dedicated to the burn-in
     n_burn_in = int(M * burn_in_ratio)
 
-    print(f'Running Lovasz-Projection sampler with M={M}, burn-in ratio={burn_in_ratio}, n_burn_in={n_burn_in}, eta={eta}, std={std}')
+    print(f'Running Lovasz-Projection sampler with M={M}, burn-in ratio={burn_in_ratio}, n_burn_in={n_burn_in}, eta="descending" std={std}')
 
     # run the Lovasz-Projection sampler, skipping the initial n_burn_in results
     it: Iterator[Set[int]] = itertools.islice(
-        lovasz_projection_inner(f=f, rng=rng, M=M + n_burn_in, eta=eta, std=std),
+        lovasz_projection_descending_inner(f=f, rng=rng, M=M + n_burn_in, std=std),
         n_burn_in,
         None)
 
     # chronological history of Lovasz-Projection samples
-    lovasz_projection_history = list(it)
-    """
-
-    print(f'Running Lovasz-Projection sampler with M={M}, no burn-in, eta={eta}, std={std}')
-    lovasz_projection_history = list(lovasz_projection_inner(f=f, rng=rng, M=M, eta=eta, std=std))
+    lovasz_projection_descending_history = list(it)
 
     # aggregate the Lovasz-Projection samples
-    lovasz_projection_samples_f = Counter((frozenset(X) for X in lovasz_projection_history))
-    return lovasz_projection_samples_f, lovasz_projection_history
+    lovasz_projection_descending_samples_f = Counter((frozenset(X) for X in lovasz_projection_descending_history))
+    return lovasz_projection_descending_samples_f, lovasz_projection_descending_history
 
 
-def lovasz_projection_inner(f: Objective, rng: np.random.Generator,
-                            M: int, eta: float, std: float) -> Iterator[Set[int]]:   
+def lovasz_projection_descending_inner(f: Objective, rng: np.random.Generator,
+                                       M: int, std: float) -> Iterator[Set[int]]:   
     # F is the submodular convex closure of f
     F = lovasz(f)
 
@@ -94,12 +87,15 @@ def lovasz_projection_inner(f: Objective, rng: np.random.Generator,
 
     change = np.full((n, ) , fill_value=0.0)
     zero = np.full((n, ), fill_value=0.0)
-    eta_sqrt = np.sqrt(eta)
-    for _ in range(1, M + 1):
+
+    for t in range(1, M + 1):
         _, grad_f_x = F(x)
         noise = rng.normal(loc=zero, scale=std, size=(n, ))
 
-        change = zero - (eta * grad_f_x) - (eta_sqrt * noise)
+        eta = (1 / (1 + t))
+        # print(f'eta: {common.float_to_str(eta)}')
+
+        change = zero - (eta * grad_f_x) - (np.sqrt(eta) * noise)
         y = x + change
 
         # project y back to [0, 1]^n
@@ -108,16 +104,8 @@ def lovasz_projection_inner(f: Objective, rng: np.random.Generator,
         # round current iterate to a set
         S: Set[int] = set(np.where(q() >= s)[0])
 
-        # p_acc is the probability of accepting the proposal sample S.
-        # the conditional probabilities in the fraction cancel each other out
-        p_acc = min(1, np.exp(-f.value(S)) / np.exp(-f.value(X)))
-
-        # z is the threshold for the acceptance of the new candidate
-        z = rng.uniform(low=0.0, high=1.0)
-
-        # the iterate set could be updated based on p_acc
-        if z <= p_acc:
-            X = S
-            x = s
+        # update the iterate
+        X = S
+        x = s
 
         yield X

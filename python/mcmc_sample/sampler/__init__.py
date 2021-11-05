@@ -1,3 +1,6 @@
 from .gibbs import gibbs_sampler as gibbs
 from .metropolis import metropolis_sampler as metropolis
 from .lovasz_projection import lovasz_projection_sampler as lovasz_projection
+from .lovasz_projection_descending import lovasz_projection_descending_sampler as lovasz_projection_descending
+from .lovasz_projection_continuous import lovasz_projection_continuous_sampler as lovasz_projection_continuous
+from .lovasz_projection_continuous_descending import lovasz_projection_continuous_descending_sampler as lovasz_projection_continuous_descending

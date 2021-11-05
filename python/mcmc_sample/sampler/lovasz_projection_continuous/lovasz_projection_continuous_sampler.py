@@ -10,14 +10,14 @@ from ...utils import lovasz
 from .... import common
 
 
-def lovasz_projection_sampler(f: Objective, rng: np.random.Generator,
-                              std: float, eta: float,
-                              cfg: DictConfig) -> Tuple[Counter, List[Set[int]]]:
+def lovasz_projection_continuous_sampler(f: Objective, rng: np.random.Generator,
+                                         std: float, eta: float,
+                                         cfg: DictConfig) -> Tuple[Counter, List[Set[int]]]:
     """
     :param f: submodular function
     :param rng: numpy random generator instance
-    :param std: standard deviation of the noise
     :param eta: step size of the subgradient projected descent
+    :param std: standard deviation of the noise
     :param cfg: Hydra configuration dictionary
     """
 
@@ -34,27 +34,27 @@ def lovasz_projection_sampler(f: Objective, rng: np.random.Generator,
     # elements dedicated to the burn-in
     n_burn_in = int(M * burn_in_ratio)
 
-    print(f'Running Lovasz-Projection sampler with M={M}, burn-in ratio={burn_in_ratio}, n_burn_in={n_burn_in}, eta={eta}, std={std}')
+    print(f'Running Lovasz-Projection sampler with M={M}, burn-in ratio={burn_in_ratio}, n_burn_in={n_burn_in}, eta="descending" std={std}')
 
     # run the Lovasz-Projection sampler, skipping the initial n_burn_in results
     it: Iterator[Set[int]] = itertools.islice(
-        lovasz_projection_inner(f=f, rng=rng, M=M + n_burn_in, eta=eta, std=std),
+        lovasz_projection_continuous_inner(f=f, rng=rng, M=M + n_burn_in, eta=eta, std=std),
         n_burn_in,
         None)
 
     # chronological history of Lovasz-Projection samples
-    lovasz_projection_history = list(it)
+    lovasz_projection_continuous_history = list(it)
     """
 
-    print(f'Running Lovasz-Projection sampler with M={M}, no burn-in, eta={eta}, std={std}')
-    lovasz_projection_history = list(lovasz_projection_inner(f=f, rng=rng, M=M, eta=eta, std=std))
+    print(f'Running Lovasz-Projection (continuous) sampler with M={M}, no burn-in, eta={eta}, std={std}')
+    lovasz_projection_continuous_history = list(lovasz_projection_continuous_inner(f=f, rng=rng, M=M, eta=eta, std=std))
 
     # aggregate the Lovasz-Projection samples
-    lovasz_projection_samples_f = Counter((frozenset(X) for X in lovasz_projection_history))
-    return lovasz_projection_samples_f, lovasz_projection_history
+    lovasz_projection_continuous_samples_f = Counter((frozenset(X) for X in lovasz_projection_continuous_history))
+    return lovasz_projection_continuous_samples_f, lovasz_projection_continuous_history
 
 
-def lovasz_projection_inner(f: Objective, rng: np.random.Generator,
+def lovasz_projection_continuous_inner(f: Objective, rng: np.random.Generator,
                             M: int, eta: float, std: float) -> Iterator[Set[int]]:   
     # F is the submodular convex closure of f
     F = lovasz(f)
@@ -95,7 +95,12 @@ def lovasz_projection_inner(f: Objective, rng: np.random.Generator,
     change = np.full((n, ) , fill_value=0.0)
     zero = np.full((n, ), fill_value=0.0)
     eta_sqrt = np.sqrt(eta)
-    for _ in range(1, M + 1):
+
+    powerset = common.powerset(f.V)
+    entries = { S: [] for S in powerset(True) }
+    V_set = set(f.V)
+
+    for _ in range(M):
         _, grad_f_x = F(x)
         noise = rng.normal(loc=zero, scale=std, size=(n, ))
 
@@ -103,21 +108,22 @@ def lovasz_projection_inner(f: Objective, rng: np.random.Generator,
         y = x + change
 
         # project y back to [0, 1]^n
-        s = project_step(y)
+        x = project_step(y)
 
-        # round current iterate to a set
-        S: Set[int] = set(np.where(q() >= s)[0])
+        entries[frozenset()].append(1 - np.max(x))
+        for S in itertools.islice(powerset(True), 1, None):
+            S_idx = np.array(list(S), dtype=int)
+            S_entry = np.min(x[S_idx])
+            others_entry = 1 - x[list(V_set - S)]
+            entries[S].append(min(S_entry, np.min(others_entry, initial=1.0)))
 
-        # p_acc is the probability of accepting the proposal sample S.
-        # the conditional probabilities in the fraction cancel each other out
-        p_acc = min(1, np.exp(-f.value(S)) / np.exp(-f.value(X)))
+    empirical_frequencies = { S: sum(values) / M for S, values in entries.items() }
 
-        # z is the threshold for the acceptance of the new candidate
-        z = rng.uniform(low=0.0, high=1.0)
+    # transform dictionary of values to a dictionary of probabilities
+    empirical_frequencies = { S: empirical_frequencies[S] / sum(empirical_frequencies.values()) for S in empirical_frequencies }
 
-        # the iterate set could be updated based on p_acc
-        if z <= p_acc:
-            X = S
-            x = s
+    # chronological history of ground truth samples
+    Xs = rng.choice(list(empirical_frequencies.keys()), size=(M, ), replace=True,
+                         p=list(empirical_frequencies.values()))
 
-        yield X
+    return Xs.tolist()
