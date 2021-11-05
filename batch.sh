@@ -19,7 +19,7 @@ echo "generate samples"
 python -u -m python.mcmc_sample -m \
 	obj=demo_monotone,delta_5 \
 	sample_size=small,middle,big \
-	sampler=gibbs,metropolis,lovasz_projection,lovasz_projection_continuous,lovasz_projection_continuous_descending
+	sampler=gibbs,metropolis,lovasz_projection,lovasz_projection_descending,lovasz_projection_continuous,lovasz_projection_continuous_descending
 
 # collect metrics
 echo "collect metrics"
