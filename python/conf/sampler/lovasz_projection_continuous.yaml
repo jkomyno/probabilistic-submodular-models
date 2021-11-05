@@ -1,5 +1,5 @@
 # parameters related to the Lovasz-Projection
-name: 'lovasz_projection' 
+name: 'lovasz_projection_continuous' 
 
 # step size of the subgradient projected descent
 eta:

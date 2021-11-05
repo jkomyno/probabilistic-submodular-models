@@ -1,11 +1,5 @@
 # parameters related to the Lovasz-Projection
-name: 'lovasz_projection' 
-
-# step size of the subgradient projected descent
-eta:
-  - 0.01
-  - 0.001
-  - 0.0001
+name: 'lovasz_projection_continuous_descending' 
 
 # standard deviation of the normal noise
 std:
