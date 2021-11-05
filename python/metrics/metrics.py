@@ -55,6 +55,14 @@ def metrics(cfg: DictConfig) -> None:
     for traverser in utils.traverse_lovasz_projection(basedir, sampler_name=sampler_name):
         metrics_sampler(traverser)
 
+    ##########################################
+    #  lovasz_projection_continuous sampler  #
+    ##########################################
+
+    sampler_name = 'lovasz_projection_continuous'
+    for traverser in utils.traverse_lovasz_projection(basedir, sampler_name=sampler_name):
+        metrics_sampler(traverser)
+
     ###################
     #  gibbs sampler  #
     ###################
