@@ -47,6 +47,14 @@ def plotter(cfg: DictConfig) -> None:
     for traverser in utils.traverse_lovasz_projection(basedir, sampler_name=sampler_name):
         plot_sampler(sampler_name, traverser)
 
+    ##########################################
+    #  lovasz_projection_continuous sampler  #
+    ##########################################
+
+    sampler_name = 'lovasz_projection_continuous'
+    for traverser in utils.traverse_lovasz_projection(basedir, sampler_name=sampler_name):
+        plot_sampler(sampler_name, traverser)
+
     ###################
     #  gibbs sampler  #
     ###################
