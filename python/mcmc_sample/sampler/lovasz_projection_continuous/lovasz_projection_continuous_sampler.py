@@ -110,12 +110,15 @@ def lovasz_projection_continuous_inner(f: Objective, rng: np.random.Generator,
         # project y back to [0, 1]^n
         x = project_step(y)
 
+        # entries[{ 0 }]       = x[0]*(1-x[1])*(1-x[2])
+        # entries[{ 1 }]       = (1-x[0])*(x[1])*(1-x[2])
+
         entries[frozenset()].append(1 - np.max(x))
         for S in itertools.islice(powerset(True), 1, None):
             S_idx = np.array(list(S), dtype=int)
-            S_entry = np.min(x[S_idx])
+            S_entry = np.prod(x[S_idx])
             others_entry = 1 - x[list(V_set - S)]
-            entries[S].append(min(S_entry, np.min(others_entry, initial=1.0)))
+            entries[S].append(S_entry * np.prod(others_entry, initial=1.0))
 
     empirical_frequencies = { S: sum(values) / M for S, values in entries.items() }
 
